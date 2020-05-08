@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Productivity App</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com//ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    <link
+    rel="stylesheet"
+    href="style.css"
+  />
+  <body>
+    <div class="header-container"></div>
+    <div id="content_container">
+      <div id="finish_task_header">
+        <p>Finish Task.</p>
+      </div>
+      <form id="form">
+        <input id="input_box" type="text" placeholder="Start A Task" />
+        <button id="input_button">
+          Enter Task <i class="fa fa-arrow-circle"></i>
+        </button>
+      </form>
+      <!-- Tasks to do -->
+      <p class="header">Task</p>
+      <div id="unfin-container"></div>
+      <!-- Tasks finished -->
+      <p class="header">Finished</p>
+      <div id="fin-container"></div>
+    </div>
+    <!-- Content Container -->
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-app.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-database.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
