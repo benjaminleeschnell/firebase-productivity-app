@@ -3,3 +3,31 @@
   width: 100%;
   border: 1px solid black;
 }
+
+#unfin-container {
+  border: 1px solid #000;
+}
+
+#fin-container {
+  border: 1px solid #000;
+}
+
+p.header {
+  font-weight: bold;
+}
+
+.finished .task_title {
+  text-decoration: line-through;
+}
+
+.finished .task_edit_button {
+  display: none;
+}
+
+.task_data p {
+  display: inline;
+}
+
+/* .done:checked ~ p {
+  text-decoration: line-through;
+} */
