@@ -11,22 +11,63 @@ var firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// To do list
-const form = document.getElementById('form');
-const box = document.getElementById('input_box');
-form.addEventListener('submit', function (e) {
-  e.preventDefault();
-  addTask(box);
-  create_unfinished_task();
-  box.value = '';
+// New todo list button
+const newTodoButton = document.getElementById('new-todo-button');
+let counter = 0;
+newTodoButton.addEventListener('click', function (e) {
+  counter++;
+  createTodoList(counter);
 });
 
-function addTask(input) {
+function createTodoList(counter) {
+  const contentContainer = document.getElementById('content_container');
+
+  // Create the elements
+  let todoList = document.createElement('div');
+  todoList.setAttribute('class', 'todo-list');
+  todoList.id = 'tdlist' + counter;
+  listId = todoList.id;
+
+  todoList.innerHTML = `
+    <div class="finish_task_header">
+      <p>To Do List</p>
+    </div>
+    <form class="add-todo-form">
+      <input class="input_box" type="text" placeholder="Task" />
+      <button class="input_button">
+        Enter<i class="fa fa-arrow-circle"></i>
+      </button>
+    </form>
+    <p class="header">Tasks</p>
+    <div class="unfin-container">
+    </div>
+    <div class="todoListDelete"><i class="fa fa-trash"></div>`;
+
+  contentContainer.append(todoList);
+
+  listenForAddTodo(todoList);
+  create_unfinished_task(listId);
+}
+
+function listenForAddTodo(todoList) {
+  const addTodoForm = todoList.getElementsByClassName('add-todo-form');
+  for (let i = 0; i < addTodoForm.length; i++) {
+    const box = addTodoForm[i].querySelectorAll('.input_box');
+    addTodoForm[i].addEventListener('submit', function (e) {
+      e.preventDefault();
+      addTask(todoList, box[0]);
+      box[0].value = '';
+    });
+  }
+}
+
+function addTask(todoList, input) {
   if (input.value.length != 0) {
     const key = firebase.database().ref().child('unfinished_key').push().key;
     var task = {
       title: input.value,
       state: false,
+      todoList: todoList.id,
       key: key,
     };
 
@@ -36,8 +77,11 @@ function addTask(input) {
   }
 }
 
-function create_unfinished_task() {
-  unfin_container = document.getElementById('unfin-container');
+function create_unfinished_task(listId) {
+  theList = document.getElementById(listId);
+  let unfin_container = theList.getElementsByClassName('unfin-container');
+  unfin_container = unfin_container[0];
+  console.log(unfin_container);
   unfin_container.innerHTML = '';
 
   task_array = [];
@@ -106,26 +150,15 @@ function create_unfinished_task() {
       taskDelete(unfin_container);
     })
     .then(() => {
-      return firebase
-        .database()
-        .ref('tasks')
-        .once('value', function (snapshot) {
-          snapshot.forEach(function (childSnapshot) {
-            var childKey = childSnapshot.key;
-            var childData = childSnapshot.val();
-            task_array.push(Object.values(childData));
-          });
-        });
-      // taskReorder(unfin_container);
+      taskReorder(unfin_container);
     })
-    .catch(console.log('error'));
+    .catch();
 }
 
 function taskReorder(unfin_container) {
-  let finished = unfin_container.getElementsByClassName('.finished');
+  let finished = unfin_container.getElementsByClassName('finished');
   for (let i = 0; i < finished.length; i++) {
     console.log(finished[i]);
-    finished[i].removeChild();
     unfin_container.append(finished[i]);
   }
 }
@@ -182,6 +215,7 @@ function taskEdit(unfin_container) {
     });
   }
 }
+
 function finishEdit(unfin_container) {
   let editing = unfin_container.querySelectorAll('.editing');
   for (let i = 0; i < editing.length; i++) {
@@ -227,13 +261,16 @@ function taskDelete(unfin_container) {
 let stateCheck = setInterval(() => {
   if (document.readyState === 'complete') {
     clearInterval(stateCheck);
-    create_unfinished_task();
+    createTodoList(counter);
+    create_unfinished_task(listId);
   }
-}, 10);
+}, 1);
 
-// let finished = unfin_container.getElementsByClassName('.finished');
-//     for (let i = 0; i < finished.length; i++) {
-//       console.log(finished[i]);
-//       finished[i].removeChild();
-//       unfin_container.append(finished[i]);
+// let deleteListButton = document.getElementsByClassName('todoListDelete');
+//     for (let i = 0; i < deleteListButton.length; i++) {
+//       deleteListButton[i].addEventListener('click', function (e) {
+//         e.preventDefault();
+//         console.log(e.currentTarget.parentElement);
+//         e.currentTarget.parentElement.remove();
+//       });
 //     }

@@ -1,15 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap');
+
+* {
+  font-family: 'Lato';
+  font-weight: 300;
+  color: #888;
+}
+
+#new-todo-button {
+  max-width: 85px;
+  background: radial-gradient(#ff6bd0 40%, #f000a4);
+  color: white;
+  text-align: center;
+  padding: 15px 25px;
+  border-radius: 3px;
+  margin: 30px;
+}
+
 .header-container {
-  height: 100px;
+  height: 50px;
   width: 100%;
   border: 1px solid black;
 }
 
-#unfin-container {
+.todo-list {
   border: 1px solid #000;
+  max-width: 185px;
+  padding: 15px;
+  position: relative;
 }
 
-#fin-container {
-  border: 1px solid #000;
+.task_container:last-of-type {
+  margin-bottom: 15px;
 }
 
 p.header {
@@ -28,6 +49,11 @@ p.header {
   display: inline;
 }
 
-/* .done:checked ~ p {
-  text-decoration: line-through;
-} */
+.todoListDelete {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 8px 12px;
+  background-color: #ddd;
+  border-radius: 3px;
+}
