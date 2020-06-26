@@ -6,54 +6,49 @@
   color: #888;
 }
 
-#new-todo-button {
-  max-width: 85px;
+.title {
+  text-align: center;
+}
+
+.newTD {
+  width: 100px;
   background: radial-gradient(#ff6bd0 40%, #f000a4);
   color: white;
   text-align: center;
   padding: 15px 25px;
   border-radius: 3px;
   margin: 30px;
+  border: none;
 }
 
-.header-container {
-  height: 50px;
-  width: 100%;
+#lists-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.list {
+  max-width: 250px;
+  padding: 10px;
+  margin: 0 5px 10px 5px;
   border: 1px solid black;
-}
-
-.todo-list {
-  border: 1px solid #000;
-  max-width: 185px;
-  padding: 15px;
   position: relative;
 }
 
-.task_container:last-of-type {
-  margin-bottom: 15px;
-}
-
-p.header {
-  font-weight: bold;
-}
-
-.finished .task_title {
-  text-decoration: line-through;
-}
-
-.finished .task_edit_button {
-  display: none;
-}
-
-.task_data p {
-  display: inline;
-}
-
-.todoListDelete {
+small {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
-  padding: 8px 12px;
-  background-color: #ddd;
-  border-radius: 3px;
+  bottom: 5px;
+  right: 15px;
+}
+
+.todos-container {
+  margin-top: 15px;
+}
+
+.todo {
+  padding: 5px;
+  margin: 5px 0;
+}
+
+.todo-text {
+  margin-right: 5px;
 }

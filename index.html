@@ -1,39 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Productivity App</title>
+    <meta charset="utf-8" />
+    <title>Todo Lists</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com//ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-  />
-  <link rel="stylesheet" href="style.css" />
   <body>
-    <div class="header-container"></div>
-    <div id="content_container">
-      <div id="new-todo-button">Todo +</div>
-      <!-- <div class="todo-list">
-        <div class="finish_task_header">
-          <p>To Do List</p>
-        </div>
-        <form class="add-todo-form">
-          <input class="input_box" type="text" placeholder="Start A Task" />
-          <button class="input_button">
-            Enter Task <i class="fa fa-arrow-circle"></i>
-          </button>
-        </form>
-        <p class="header">Tasks</p>
-        <div class="unfin-container"></div>
-      </div> -->
-    </div>
-    <!-- Content Container -->
+    <h1 class="title">All the Tools</h1>
+    <button
+      class="newTD"
+      type="button"
+      name="button"
+      onClick="handleAddListClick()"
+    >
+      Todo +
+    </button>
+    <div id="lists-container"></div>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-app.js"></script>
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-database.js"></script>
-    <script src="main.js"></script>
+    <script src="./main.js" charset="utf-8"></script>
   </body>
 </html>
