@@ -52,3 +52,11 @@ small {
 .todo-text {
   margin-right: 5px;
 }
+
+.fa {
+  padding: 0 3px;
+}
+
+.done {
+  text-decoration: line-through;
+}
