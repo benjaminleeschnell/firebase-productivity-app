@@ -55,7 +55,7 @@ function addList() {
   var list = {
     title: 'Title',
     listKey: listKey,
-    items: [],
+    items: 'items',
   };
   var updates = {};
   updates[listKey] = list;
@@ -195,22 +195,31 @@ function loadFromDb() {
     snapshot.forEach(function (childSnapshot) {
       var childKey = childSnapshot.key;
       var childData = childSnapshot.val();
-      const lists = Object.values(childData);
-
-      for (let i = 0; i < lists.length; i++) {
-        const list = lists[i];
-        console.log(list[0]);
-        /*
-        todos = [];
-        todos.push(Object.values(list));
-        for (let j = 0; j < list.length; j++) {
-          const todo = list[j];
-          console.log(todo);
-          // console.log(todo[i]);
-        }
-        */
-      }
+      lists.push(Object.values(childData));
     });
+    for (let i = 0; i < lists.length; i++) {
+      const list = lists[i];
+
+      listKey = list[1];
+      listTitle = list[2];
+
+      let listsContainer = document.getElementById('lists-container');
+      let listTemplate = document.createElement('div');
+      // Template new list
+      listTemplate.innerHTML = `<div class="list" id="${listKey}" data-list-id="${listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${listTitle}</h3><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
+      listsContainer.append(listTemplate);
+
+      items = [];
+      items.push(Object.values(list[0]));
+      console.log(items);
+
+      /*
+      for (let j = 0; i < items.length; j++) {
+        const item = items[j];
+        console.log(item);
+      }
+      */
+    }
 
     /*
       const list = list_array[i];
