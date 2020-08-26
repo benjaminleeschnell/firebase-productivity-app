@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <title>Todo Lists</title>
+    <title>All the Tools</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com//ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
@@ -11,10 +11,59 @@
   </head>
   <body>
     <h1 class="title">All the Tools</h1>
-    <button class="newTD" type="button" name="button" onClick="addList()">
+    <button id="newTD" type="button" name="button" onClick="addList()">
       Todo +
     </button>
-    <div id="lists-container"></div>
+    <button id="newKb" type="button" name="button" onClick="addKanban()">
+      Kanban +
+    </button>
+    <div id="lists-container">
+      <div class="kanban">
+        <div class="kheader">
+          <h3 onclick="handleEditKanbanTitle(this)">Kanban Title</h3>
+        </div>
+        <div class="kcolumn">
+          <div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">
+            Column Title
+          </div>
+          <div class="kitem" data-order="1">
+            <span class="fa fa-circle"></span>
+            <span onclick="handleEditKItem(this)" class="task">Task 1</span>
+            <span onclick="removeKItem(this)" class="fa fa-trash"></span>
+          </div>
+          <div onclick="addKItem(this)" class="addkitem">+</div>
+          <div onclick="removeKColumn(this)" class="deleteColumn">X</div>
+        </div>
+        <div class="kcolumn">
+          <div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">
+            Column Title
+          </div>
+          <div class="kitem" data-order="1">
+            <span class="fa fa-circle"></span>
+            <span onclick="handleEditKItem(this)" class="task">Task 1</span>
+            <span onclick="removeKItem(this)" class="fa fa-trash"></span>
+          </div>
+          <div onclick="addKItem(this)" class="addkitem">+</div>
+          <div onclick="removeKColumn(this)" class="deleteColumn">X</div>
+        </div>
+        <div class="kcolumn">
+          <div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">
+            Column Title
+          </div>
+          <div class="kitem" data-order="1">
+            <span class="fa fa-circle"></span>
+            <span onclick="handleEditKItem(this)" class="task">Task 1</span>
+            <span onclick="removeKItem(this)" class="fa fa-trash"></span>
+          </div>
+          <div onclick="addKItem(this)" class="addkitem">+</div>
+          <div onclick="removeKColumn(this)" class="deleteColumn">X</div>
+        </div>
+        <div onclick="addColumn(this)" class="addColumn">+</div>
+        <div class="kfooter">
+          <div onclick="removeKanban(this)" class="kanbanclose">X</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-app.js"></script>

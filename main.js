@@ -23,9 +23,9 @@ function handleAddTodoClick(clickedElement) {
   let todoContent = document
     .querySelectorAll(`[data-list-id="${listKey}"]`)[0]
     .getElementsByClassName('new-todo-content-input')[0].value;
-  let listTitle = clickedElement.parentElement.nextElementSibling.innerHTML;
+  //  let listTitle = clickedElement.parentElement.nextElementSibling.innerHTML;
   // Call function to add new todo
-  addTodo(listKey, todoContent, listTitle);
+  addTodo(listKey, todoContent);
   // return input to blank
   clickedElement.previousSibling.value = '';
   return false;
@@ -42,12 +42,11 @@ function handleRemoveTodoClick(clickedElement) {
   let listKey = clickedElement.parentElement.parentElement.parentElement.parentElement.getAttribute(
     'data-list-id'
   );
-  // console.log(clickedElement.parentElement.parentElement.parentElement);
   removeTodo(clickedElement, todoKey, listKey);
 }
 
 /*===============================================================
-MAIN FUNCTIONS
+TODO MAIN FUNCTIONS
 ===============================================================*/
 function addList() {
   // Add list to firebase
@@ -55,11 +54,10 @@ function addList() {
   var list = {
     title: 'Title',
     listKey: listKey,
-    items: 'items',
+    items: [],
   };
   var updates = {};
   updates[listKey] = list;
-  // console.log(updates);
   db.ref('lists/').update(updates);
 
   // Set up variables
@@ -69,7 +67,7 @@ function addList() {
   // Template new list
   listTemplate.innerHTML = `<div class="list" data-list-id="${listKey}">
       <form><input class="new-todo-content-input" type="text"></input><button data-list-id="${listKey}" onClick="return handleAddTodoClick(this)">Add New Todo</button></form>
-      <h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">Title</h3>
+      <h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">Title</h3><span class="enterToSave">Type enter to save</span>
       <div class="todos-container">
         <!-- Todos will go here -->
       </div>
@@ -81,6 +79,8 @@ function addList() {
 }
 
 function handleEditTitle(clickedElement) {
+  const alert = clickedElement.nextElementSibling;
+  alert.className = 'enterToSave show';
   clickedElement.addEventListener('keydown', function (e) {
     if (e.keyCode == 13) {
       e.preventDefault();
@@ -88,39 +88,40 @@ function handleEditTitle(clickedElement) {
       const title = clickedElement.innerHTML;
       const list = clickedElement.parentElement;
       const listKey = list.getAttribute('data-list-id');
-      db.ref('lists/').child(listKey).child('title').update(title);
+      db.ref('lists/').child(listKey).child('title').set(title);
+      clickedElement.blur();
+      alert.className = 'enterToSave hide';
     }
   });
 }
 
 function handleTodoEdit(clickedElement) {
+  const alert = clickedElement.nextElementSibling;
+  alert.className = 'enterToSave show';
   clickedElement.addEventListener('keydown', function (e) {
     if (e.keyCode == 13) {
       e.preventDefault();
-      // console.log('pressed');
       // Add new list title to Firebase
       const todoContent = clickedElement.innerHTML;
-      const todoKey = clickedElement.getAttribute('data-key');
+      const todoKey = clickedElement.parentElement.getAttribute('data-todo-id');
       const listKey = clickedElement.parentElement.parentElement.parentElement.parentElement.getAttribute(
         'data-list-id'
       );
-      const listTitle =
-        clickedElement.parentElement.parentElement.parentElement
-          .previousElementSibling.textContent;
-      var task = {
-        title: todoContent,
-        todoList: listKey,
-        todoKey: todoKey,
-        listTitle: listTitle,
-      };
-      var updates = {};
-      updates[todoKey] = task;
-      db.ref('lists/').child(listKey).child('items').update(updates);
+
+      db.ref('lists/')
+        .child(listKey)
+        .child('items')
+        .child(todoKey)
+        .child('title')
+        .set(todoContent);
+
+      clickedElement.blur();
+      alert.className = 'enterToSave hide';
     }
   });
 }
 
-function addTodo(listKey, todoContent, listTitle) {
+function addTodo(listKey, todoContent) {
   // Set up variables
   let targetList = document.querySelectorAll(
     `div.list[data-list-id="${listKey}"]`
@@ -136,7 +137,7 @@ function addTodo(listKey, todoContent, listTitle) {
     title: todoContent,
     todoList: listKey,
     todoKey: todoKey,
-    listTitle: listTitle,
+    done: false,
   };
 
   var updates = {};
@@ -145,7 +146,7 @@ function addTodo(listKey, todoContent, listTitle) {
 
   // Template new todo
   todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}">
-      <span class="todo-text" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><i class="fa fa-check" onclick="taskDone(this)"></i><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i>
+      <input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i>
     </div>`;
   // Add new todo to the DOM within target container
   targetTodosContainer.append(todoTemplate);
@@ -155,13 +156,49 @@ function addTodo(listKey, todoContent, listTitle) {
 }
 
 function taskDone(clickedElement) {
+  const listKey = clickedElement.parentElement.parentElement.parentElement.parentElement.getAttribute(
+    'data-list-id'
+  );
+  const todoKey = clickedElement.parentElement.getAttribute('data-todo-id');
+
+  const checkbox = clickedElement;
   const targetTodosContainer =
-    clickedElement.parentElement.parentElement.parentElement;
-  const todoElement = clickedElement.parentElement;
-  const todo = clickedElement.previousElementSibling;
-  todo.classList.toggle('done');
-  todo.setAttribute('contentEditable', 'false');
-  targetTodosContainer.append(todoElement);
+    checkbox.parentElement.parentElement.parentElement;
+  const todoElement = checkbox.parentElement.parentElement;
+  const todo = checkbox.nextSibling;
+  if (checkbox.checked === true) {
+    todo.className = 'todo-text true';
+    todo.setAttribute('contentEditable', 'false');
+    targetTodosContainer.append(todoElement);
+    const state = true;
+
+    db.ref('lists/')
+      .child(listKey)
+      .child('items')
+      .child(todoKey)
+      .child('done')
+      .set(state);
+  } else if (checkbox.checked === false) {
+    todo.className = 'todo-text false';
+    todo.setAttribute('contentEditable', 'true');
+    targetTodosContainer.prepend(todoElement);
+    const state = false;
+
+    db.ref('lists/')
+      .child(listKey)
+      .child('items')
+      .child(todoKey)
+      .child('done')
+      .set(state);
+  }
+}
+
+function moveDoneLast(todoTemplate) {
+  const todo = todoTemplate.getElementsByClassName('true');
+  for (let i = 0; i < todo.length; i++) {
+    const doneItem = todo[i].parentElement.parentElement;
+    todoTemplate.parentElement.appendChild(doneItem);
+  }
 }
 
 // Remove list
@@ -179,9 +216,11 @@ function removeTodo(clickedElement, todoKey, listKey) {
     `div.todo[data-todo-id="${todoKey}"]`
   )[0];
   // Remove todo in Firebase here
-  // const key = clickedElement.previousSibling.getAttribute('data-key');
-  task_to_remove = db.ref('/lists/').child(listKey).child(todoKey);
-  // console.log(task_to_remove);
+  task_to_remove = db
+    .ref('/lists/')
+    .child(listKey)
+    .child('items')
+    .child(todoKey);
   task_to_remove.remove();
 
   // Remove todo from DOM
@@ -195,66 +234,120 @@ function loadFromDb() {
     snapshot.forEach(function (childSnapshot) {
       var childKey = childSnapshot.key;
       var childData = childSnapshot.val();
-      lists.push(Object.values(childData));
+      lists.push(childData);
     });
     for (let i = 0; i < lists.length; i++) {
       const list = lists[i];
-
-      listKey = list[1];
-      listTitle = list[2];
-
       let listsContainer = document.getElementById('lists-container');
       let listTemplate = document.createElement('div');
       // Template new list
-      listTemplate.innerHTML = `<div class="list" id="${listKey}" data-list-id="${listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${listTitle}</h3><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
+      listTemplate.innerHTML = `<div class="list" id="${list.listKey}" data-list-id="${list.listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${list.listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
       listsContainer.append(listTemplate);
 
       items = [];
-      items.push(Object.values(list[0]));
-      console.log(items);
+      if (list.items) {
+        const items = Object.values(list.items);
+        items.forEach(function (item) {
+          listKey = item.todoList;
+          todoContent = item.title;
+          todoKey = item.todoKey;
+          state = item.done;
 
-      /*
-      for (let j = 0; i < items.length; j++) {
-        const item = items[j];
-        console.log(item);
+          let todoTemplate = document.createElement('div');
+          const getList = document.getElementById(listKey);
+          const targetTodosContainer = getList.querySelectorAll(
+            '.todos-container'
+          )[0];
+
+          if (state === true) {
+            todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox" checked><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+          } else if (state === false) {
+            todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+          }
+          targetTodosContainer.append(todoTemplate);
+          setTimeout(function afterTwoSeconds() {
+            moveDoneLast(todoTemplate);
+          }, 1000);
+        });
       }
-      */
     }
-
-    /*
-      const list = list_array[i];
-      //console.log(list_array[i]);
-      // console.log(list);
-        listKey = list.todoList;
-        todoContent = list.title;
-        listTitle = list.listTitle;
-        todoKey = list.todoKey;
-
-        let listsContainer = document.getElementById('lists-container');
-        let listTemplate = document.createElement('div');
-        let todoTemplate = document.createElement('div');
-        // Template new list
-        listTemplate.innerHTML = `<div class="list" id="${listKey}" data-list-id="${listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${listTitle}</h3><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
-
-        const targetTodosContainer = listTemplate.querySelectorAll(
-          '.todos-container'
-        )[0];
-
-        todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><span class="todo-text" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><i class="fa fa-check" onclick="taskDone(this)"></i><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
-
-        targetTodosContainer.append(todoTemplate);
-        listsContainer.append(listTemplate);
-     
-        const listKey = list_array[i][0];
-        const listTitle = list_array[i][1];
-        let listsContainer = document.getElementById('lists-container');
-        let listTemplate = document.createElement('div');
-        // Template new list
-        listTemplate.innerHTML = `<div class="list" id="${listKey}" data-list-id="${listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${listTitle}</h3><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
-        listsContainer.append(listTemplate);
-      
-    }*/
   });
+}
+
+/*===============================================================
+---------------------
+KANBAN MAIN FUNCTIONS
+---------------------
+===============================================================*/
+
+function addKanban() {
+  // Add list to firebase
+  const kbKey = db.ref('/lists/').push().key;
+  var kb = {
+    title: 'Title',
+    kbkey: kbKey,
+    columns: [],
+  };
+  var updates = {};
+  updates[kbKey] = kb;
+  db.ref('lists/').update(updates);
+
+  let listsContainer = document.getElementById('lists-container');
+  let kanbanTemplate = document.createElement('div');
+  kanbanTemplate.setAttribute('class', 'kanban');
+  kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbkey="${kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="removeKanban(this)" class="kanbanclose">X</div></div>`;
+
+  listsContainer.append(kanbanTemplate);
+}
+
+function addColumn(clickedElement) {
+  const kb = clickedElement.parentElement;
+  let kbkey = kb.querySelectorAll(`div.kheader`)[0].getAttribute('data-kbkey');
+  const colKey = db.ref('/lists/').child(kbkey).child('columns').push().key;
+
+  var col = {
+    kbkey: kbkey,
+    colkey: colKey,
+    items: [];
+  };
+
+  var updates = {};
+  updates[colKey] = col;
+  db.ref('lists/').child(kbkey).child('columns').update(updates);
+
+  const kcolumn = document.createElement('div');
+  kcolumn.setAttribute('class', 'kcolumn');
+  kcolumn.innerHTML = `<div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">Column Title</div><div onclick="addKItem(this)" class="addkitem">+</div><div onclick="removeKColumn(this)" class="deleteColumn">X</div></div>`;
+
+  kb.insertBefore(kcolumn, clickedElement);
+}
+
+function handleEditKanbanTitle(clickedElement) {
+  console.log(clickedElement);
+}
+
+function handleEditKColumnTitle(clickedElement) {
+  console.log(clickedElement);
+}
+
+function removeKanban(clickedElement) {
+  clickedElement.parentElement.parentElement.remove();
+}
+
+function handleEditKItem(clickedElement) {
+  console.log(clickedElement);
+}
+
+function removeKItem(clickedElement) {
+  console.log(clickedElement);
+}
+
+function addKItem(clickedElement) {
+  console.log(clickedElement);
+}
+
+function removeKColumn(clickedElement) {
+  console.log(clickedElement);
 }
 
 let stateCheck = setInterval(() => {
@@ -264,8 +357,31 @@ let stateCheck = setInterval(() => {
   }
 }, 1);
 
-/* Next steps
-* Make it so I can mark an item as done.
-* Edit list title and todo element are both broken
+/* 
 
+Next
+* Add kanban to firebase
+* Add an item FE only
+* Add an item to firebase
+* Make the list of items have a data-order attribute so I can orderby number when pulling from the database
+* Think through architecture of how database will be structured
+    * kanbans (like lists)
+        * pushed key
+          * title
+          * kanban key
+          * columns (like items)
+            * pushed key
+            * column title
+            * column id
+              * items (like items, but another level down)
+                * pushed key
+                  * title
+                  * item key
+                  * column key
+                  * item number   
+* Start adding database elements
+
+
+* Later (notes)
+    * Alert to ask if you're sure you want to delete lists, kanban columns. Frustrating to accidentally delete with one click
 */
