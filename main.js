@@ -285,7 +285,7 @@ function addKanban() {
   const kbKey = db.ref('/lists/').push().key;
   var kb = {
     title: 'Title',
-    kbkey: kbKey,
+    kbKey: kbKey,
     columns: [],
   };
   var updates = {};
@@ -295,31 +295,65 @@ function addKanban() {
   let listsContainer = document.getElementById('lists-container');
   let kanbanTemplate = document.createElement('div');
   kanbanTemplate.setAttribute('class', 'kanban');
-  kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbkey="${kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="removeKanban(this)" class="kanbanclose">X</div></div>`;
+  kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbKey="${kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="removeKanban(this)" class="kanbanclose">X</div></div>`;
 
   listsContainer.append(kanbanTemplate);
 }
 
 function addColumn(clickedElement) {
   const kb = clickedElement.parentElement;
-  let kbkey = kb.querySelectorAll(`div.kheader`)[0].getAttribute('data-kbkey');
-  const colKey = db.ref('/lists/').child(kbkey).child('columns').push().key;
+  let kbKey = kb.querySelectorAll(`div.kheader`)[0].getAttribute('data-kbKey');
+  const colKey = db.ref('/lists/').child(kbKey).child('columns').push().key;
 
   var col = {
-    kbkey: kbkey,
-    colkey: colKey,
-    items: [];
+    kbKey: kbKey,
+    colKey: colKey,
+    items: [],
   };
 
   var updates = {};
   updates[colKey] = col;
-  db.ref('lists/').child(kbkey).child('columns').update(updates);
+  db.ref('lists/').child(kbKey).child('columns').update(updates);
 
   const kcolumn = document.createElement('div');
   kcolumn.setAttribute('class', 'kcolumn');
+  kcolumn.setAttribute('data-colKey', colKey);
   kcolumn.innerHTML = `<div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">Column Title</div><div onclick="addKItem(this)" class="addkitem">+</div><div onclick="removeKColumn(this)" class="deleteColumn">X</div></div>`;
 
   kb.insertBefore(kcolumn, clickedElement);
+}
+
+function addKItem(clickedElement) {
+  const kb = clickedElement.parentElement.parentElement;
+  const kcolumn = clickedElement.parentElement;
+  let kbKey = kb.querySelectorAll(`div.kheader`)[0].getAttribute('data-kbkey');
+  let colKey = clickedElement.parentElement.getAttribute('data-colkey');
+  const itemKey = db
+    .ref('/lists/')
+    .child(kbKey)
+    .child(colKey)
+    .child('items')
+    .push().key;
+
+  var item = {
+    kbKey: kbKey,
+    colKey: colKey,
+    itemKey: itemKey,
+    taskText: 'task',
+  };
+
+  var updates = {};
+  updates[itemKey] = item;
+  db.ref('lists/').child(kbKey).child('colKey').child('items').update(updates);
+
+  const kitem = document.createElement('div');
+  kitem.setAttribute('class', 'kitem');
+  kitem.setAttribute('data-itemKey', itemKey);
+  kitem.innerHTML = `<span class="fa fa-circle"></span>
+  <span onclick="handleEditKItem(this)" class="task">Task</span>
+  <span onclick="removeKItem(this)" class="fa fa-trash"></span>`;
+
+  kcolumn.insertBefore(kitem, clickedElement);
 }
 
 function handleEditKanbanTitle(clickedElement) {
@@ -339,10 +373,6 @@ function handleEditKItem(clickedElement) {
 }
 
 function removeKItem(clickedElement) {
-  console.log(clickedElement);
-}
-
-function addKItem(clickedElement) {
   console.log(clickedElement);
 }
 
