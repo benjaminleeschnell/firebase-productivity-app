@@ -344,7 +344,12 @@ function addKItem(clickedElement) {
 
   var updates = {};
   updates[itemKey] = item;
-  db.ref('lists/').child(kbKey).child('colKey').child('items').update(updates);
+  db.ref('lists/')
+    .child(kbKey)
+    .child('columns')
+    .child(colKey)
+    .child('items')
+    .update(updates);
 
   const kitem = document.createElement('div');
   kitem.setAttribute('class', 'kitem');
