@@ -15,8 +15,37 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 /*===============================================================
+GLOBAL STATE
+===============================================================*/
+let applicationState = {
+  listNumberCounter: 0,
+  todoNumberCounter: 0,
+};
+
+/*===============================================================
+HELPER FUNCTIONS
+===============================================================*/
+function getNextListId() {
+  applicationState.listNumberCounter++;
+  return applicationState.listNumberCounter;
+}
+
+function getNextTodoId() {
+  applicationState.todoNumberCounter++;
+  return applicationState.todoNumberCounter;
+}
+
+/*===============================================================
 CLICK HANDLERS
 ===============================================================*/
+function handleAddListClick() {
+  // Set up variables
+  let listOrderNumber = getNextListId();
+
+  // Call function to add new list
+  addList(listOrderNumber);
+}
+
 function handleAddTodoClick(clickedElement) {
   // Set up variables
   let listKey = clickedElement.getAttribute('data-list-id');
@@ -48,13 +77,14 @@ function handleRemoveTodoClick(clickedElement) {
 /*===============================================================
 TODO MAIN FUNCTIONS
 ===============================================================*/
-function addList() {
+function addList(listOrderNumber) {
   // Add list to firebase
   const listKey = db.ref('/lists/').push().key;
   var list = {
     title: 'Title',
     listKey: listKey,
     items: [],
+    type: 'list',
   };
   var updates = {};
   updates[listKey] = list;
@@ -63,6 +93,7 @@ function addList() {
   // Set up variables
   let listsContainer = document.getElementById('lists-container');
   let listTemplate = document.createElement('div');
+  listTemplate.setAttribute('data-list-order', listOrderNumber);
 
   // Template new list
   listTemplate.innerHTML = `<div class="list" data-list-id="${listKey}">
@@ -238,37 +269,41 @@ function loadFromDb() {
     });
     for (let i = 0; i < lists.length; i++) {
       const list = lists[i];
-      let listsContainer = document.getElementById('lists-container');
-      let listTemplate = document.createElement('div');
-      // Template new list
-      listTemplate.innerHTML = `<div class="list" id="${list.listKey}" data-list-id="${list.listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${list.listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
-      listsContainer.append(listTemplate);
+      if (list.type === 'list') {
+        let listsContainer = document.getElementById('lists-container');
+        let listTemplate = document.createElement('div');
+        // Template new list
+        listTemplate.innerHTML = `<div class="list" id="${list.listKey}" data-list-id="${list.listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${list.listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
+        listsContainer.append(listTemplate);
 
-      items = [];
-      if (list.items) {
-        const items = Object.values(list.items);
-        items.forEach(function (item) {
-          listKey = item.todoList;
-          todoContent = item.title;
-          todoKey = item.todoKey;
-          state = item.done;
+        items = [];
+        if (list.items) {
+          const items = Object.values(list.items);
+          items.forEach(function (item) {
+            listKey = item.todoList;
+            todoContent = item.title;
+            todoKey = item.todoKey;
+            state = item.done;
 
-          let todoTemplate = document.createElement('div');
-          const getList = document.getElementById(listKey);
-          const targetTodosContainer = getList.querySelectorAll(
-            '.todos-container'
-          )[0];
+            let todoTemplate = document.createElement('div');
+            const getList = document.getElementById(listKey);
+            const targetTodosContainer = getList.querySelectorAll(
+              '.todos-container'
+            )[0];
 
-          if (state === true) {
-            todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox" checked><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
-          } else if (state === false) {
-            todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
-          }
-          targetTodosContainer.append(todoTemplate);
-          setTimeout(function afterTwoSeconds() {
-            moveDoneLast(todoTemplate);
-          }, 1000);
-        });
+            if (state === true) {
+              todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox" checked><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+            } else if (state === false) {
+              todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+            }
+            targetTodosContainer.append(todoTemplate);
+            setTimeout(function afterTwoSeconds() {
+              moveDoneLast(todoTemplate);
+            }, 1000);
+          });
+        }
+      } else if (list.type === 'kanban') {
+        console.log('you have kanban');
       }
     }
   });
@@ -287,6 +322,7 @@ function addKanban() {
     title: 'Title',
     kbKey: kbKey,
     columns: [],
+    type: 'kanban',
   };
   var updates = {};
   updates[kbKey] = kb;
@@ -395,27 +431,24 @@ let stateCheck = setInterval(() => {
 /* 
 
 Next
-* Add kanban to firebase
-* Add an item FE only
-* Add an item to firebase
-* Make the list of items have a data-order attribute so I can orderby number when pulling from the database
-* Think through architecture of how database will be structured
-    * kanbans (like lists)
-        * pushed key
-          * title
-          * kanban key
-          * columns (like items)
-            * pushed key
-            * column title
-            * column id
-              * items (like items, but another level down)
-                * pushed key
-                  * title
-                  * item key
-                  * column key
-                  * item number   
-* Start adding database elements
+* Make Lists drag and droppable
+    * Drag and drop lists
+    * Update number based on location
+    * Save list order number to database
+    * Populate lists in order from database
+    
 
+* Make the list of items have a data-order attribute so I can orderby number when pulling from the database
+    * Add numbers to data attribute of the list todos
+    * Add drag and drop functionality to lists
+    * Save list number to database
+    * Populate todos in order from database
+    * Add numbers to data attribute of the kanban tasks
+    * Add drag and drop functionality to kanbans
+    * Save kanban task number to database
+    * Populate kanban tasks in order from database
+
+* Remove kanbans from database when appropriate X is clicked
 
 * Later (notes)
     * Alert to ask if you're sure you want to delete lists, kanban columns. Frustrating to accidentally delete with one click
