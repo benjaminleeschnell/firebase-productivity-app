@@ -23,57 +23,11 @@
       Kanban +
     </button>
     <div id="lists-container">
-      <div class="kanban">
-        <div class="kheader">
-          <h3 onclick="handleEditKanbanTitle(this)">Kanban Title</h3>
-        </div>
-        <div class="kcolumn">
-          <div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">
-            Column Title
-          </div>
-          <div class="kitem" data-order="1">
-            <span class="fa fa-circle"></span>
-            <span onclick="handleEditKItem(this)" class="task">Task 1</span>
-            <span onclick="removeKItem(this)" class="fa fa-trash"></span>
-          </div>
-          <div onclick="addKItem(this)" class="addkitem">+</div>
-          <div onclick="removeKColumn(this)" class="deleteColumn">X</div>
-        </div>
-        <div class="kcolumn">
-          <div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">
-            Column Title
-          </div>
-          <div class="kitem" data-order="1">
-            <span class="fa fa-circle"></span>
-            <span onclick="handleEditKItem(this)" class="task">Task 1</span>
-            <span onclick="removeKItem(this)" class="fa fa-trash"></span>
-          </div>
-          <div onclick="addKItem(this)" class="addkitem">+</div>
-          <div onclick="removeKColumn(this)" class="deleteColumn">X</div>
-        </div>
-        <div class="kcolumn">
-          <div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">
-            Column Title
-          </div>
-          <div class="kitem" data-order="1">
-            <span class="fa fa-circle"></span>
-            <span onclick="handleEditKItem(this)" class="task">Task 1</span>
-            <span onclick="removeKItem(this)" class="fa fa-trash"></span>
-          </div>
-          <div onclick="addKItem(this)" class="addkitem">+</div>
-          <div onclick="removeKColumn(this)" class="deleteColumn">X</div>
-        </div>
-        <div onclick="addColumn(this)" class="addColumn">+</div>
-        <div class="kfooter">
-          <div onclick="removeKanban(this)" class="kanbanclose">X</div>
-        </div>
-      </div>
-    </div>
-
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-app.js"></script>
     <!-- Add Firebase products that you want to use -->
     <script src="https://www.gstatic.com/firebasejs/5.0.0/firebase-database.js"></script>
+    <script src="./draganddrop.js" charset="utf-8"></script>
     <script src="./main.js" charset="utf-8"></script>
   </body>
 </html>
