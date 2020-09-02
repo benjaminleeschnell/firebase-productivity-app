@@ -1,16 +1,10 @@
-function dragTheList(draggedElement) {
-  const draglists = document.querySelectorAll('.draglist');
+function dragStart() {
+  this.classList.add('dragging');
+}
 
-  draglists.forEach((draglist) => {
-    draglist.addEventListener('dragstart', () => {
-      draglist.classList.add('dragging');
-    });
-
-    draggedElement.addEventListener('dragend', () => {
-      draglist.classList.remove('dragging');
-      //dragUpdateNr();
-    });
-  });
+function dragEnd() {
+  this.classList.remove('dragging');
+  // dragUpdateNr();
 }
 
 const listsContainer = document.getElementById('lists-container');
@@ -20,11 +14,11 @@ function dragOver(e) {
   e.preventDefault();
   const afterElement = getDragAfterElement(this, e.clientY);
   const draglist = document.querySelector('.dragging');
-  console.log(draglist);
+  //console.log(draglist);
   if (afterElement == null) {
     this.appendChild(draglist);
   } else {
-    // this.insertBefore(draglist, afterElement);
+    this.insertBefore(draglist, afterElement);
   }
 }
 

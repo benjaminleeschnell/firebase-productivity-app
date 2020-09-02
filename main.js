@@ -94,9 +94,13 @@ function addList(listOrderNumber) {
   let listsContainer = document.getElementById('lists-container');
   let listTemplate = document.createElement('div');
   listTemplate.setAttribute('data-list-order', listOrderNumber);
+  listTemplate.setAttribute('draggable', true);
+  listTemplate.setAttribute('class', 'dragList');
+  listTemplate.addEventListener('dragstart', dragStart);
+  listTemplate.addEventListener('drop', dragEnd);
 
   // Template new list
-  listTemplate.innerHTML = `<div class="list draglist" draggable="true" ondrag="dragTheList(this)" data-list-id="${listKey}">
+  listTemplate.innerHTML = `<div class="list" data-list-id="${listKey}">
       <form><input class="new-todo-content-input" type="text"></input><button data-list-id="${listKey}" onClick="return handleAddTodoClick(this)">Add New Todo</button></form>
       <h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">Title</h3><span class="enterToSave">Type enter to save</span>
       <div class="todos-container">
@@ -272,8 +276,12 @@ function loadFromDb() {
       if (list.type === 'list') {
         let listsContainer = document.getElementById('lists-container');
         let listTemplate = document.createElement('div');
+        listTemplate.setAttribute('draggable', true);
+        listTemplate.setAttribute('class', 'dragList');
+        listTemplate.addEventListener('dragstart', dragStart);
+        listTemplate.addEventListener('drop', dragEnd);
         // Template new list
-        listTemplate.innerHTML = `<div class="list draglist" draggable="true" ondrag="dragTheList(this)" id="${list.listKey}" data-list-id="${list.listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${list.listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
+        listTemplate.innerHTML = `<div class="list" id="${list.listKey}" data-list-id="${list.listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${list.listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
         listsContainer.append(listTemplate);
 
         items = [];
