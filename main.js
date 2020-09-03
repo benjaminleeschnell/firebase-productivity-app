@@ -18,8 +18,8 @@ const db = firebase.database();
 GLOBAL STATE
 ===============================================================*/
 let applicationState = {
-  listNumberCounter: 0,
-  todoNumberCounter: 0,
+  listNumberCounter: -1,
+  todoNumberCounter: -1,
 };
 
 /*===============================================================
@@ -85,6 +85,7 @@ function addList(listOrderNumber) {
     listKey: listKey,
     items: [],
     type: 'list',
+    listnumber: listOrderNumber,
   };
   var updates = {};
   updates[listKey] = list;
@@ -276,6 +277,7 @@ function loadFromDb() {
       if (list.type === 'list') {
         let listsContainer = document.getElementById('lists-container');
         let listTemplate = document.createElement('div');
+        listTemplate.setAttribute('data-list-order', list.listnumber);
         listTemplate.setAttribute('draggable', true);
         listTemplate.setAttribute('class', 'dragList');
         listTemplate.addEventListener('dragstart', dragStart);
@@ -440,21 +442,15 @@ let stateCheck = setInterval(() => {
 
 Next
 * Make Lists drag and droppable
-    * Drag and drop lists
     * Update number based on location
     * Save list order number to database
     * Populate lists in order from database
-    
 
-* Make the list of items have a data-order attribute so I can orderby number when pulling from the database
-    * Add numbers to data attribute of the list todos
-    * Add drag and drop functionality to lists
-    * Save list number to database
-    * Populate todos in order from database
+* Make the kanban tasks have a data-order attribute so I can orderby number when pulling from the database
     * Add numbers to data attribute of the kanban tasks
-    * Add drag and drop functionality to kanbans
-    * Save kanban task number to database
-    * Populate kanban tasks in order from database
+    * Add drag and drop functionality to tasks
+    * Save task number to database
+    * Populate tasks in order from database
 
 * Remove kanbans from database when appropriate X is clicked
 

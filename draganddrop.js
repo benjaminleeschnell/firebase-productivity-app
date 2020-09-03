@@ -4,7 +4,7 @@ function dragStart() {
 
 function dragEnd() {
   this.classList.remove('dragging');
-  // dragUpdateNr();
+  dragUpdateNr();
 }
 
 const listsContainer = document.getElementById('lists-container');
@@ -39,4 +39,13 @@ function getDragAfterElement(listsContainer, y) {
     },
     { offset: Number.NEGATIVE_INFINITY }
   ).element;
+}
+
+function dragUpdateNr() {
+  let drags = document.querySelectorAll('.dragList');
+  for (let i = 0; i < drags.length; i++) {
+    let drag = drags[i];
+    console.log(drag);
+    drag.setAttribute('data-list-order', i);
+  }
 }
