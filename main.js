@@ -98,7 +98,7 @@ function addList(listOrderNumber) {
   listTemplate.setAttribute('draggable', true);
   listTemplate.setAttribute('class', 'dragList');
   listTemplate.addEventListener('dragstart', dragStart);
-  listTemplate.addEventListener('drop', dragEnd);
+  listTemplate.addEventListener('dragend', dragEnd);
 
   // Template new list
   listTemplate.innerHTML = `<div class="list" data-list-id="${listKey}">
@@ -243,7 +243,7 @@ function removeList(clickedElement, listKey) {
   task_to_remove = db.ref('/lists/').child(listKey);
   task_to_remove.remove();
   // Remove from DOM
-  clickedElement.parentElement.remove();
+  clickedElement.parentElement.parentElement.remove();
 }
 
 function removeTodo(clickedElement, todoKey, listKey) {
@@ -266,57 +266,60 @@ function removeTodo(clickedElement, todoKey, listKey) {
 // Populate to do list with existing items in database
 function loadFromDb() {
   lists = [];
-  db.ref('/lists/').once('value', function (snapshot) {
-    snapshot.forEach(function (childSnapshot) {
-      var childKey = childSnapshot.key;
-      var childData = childSnapshot.val();
-      lists.push(childData);
-    });
-    for (let i = 0; i < lists.length; i++) {
-      const list = lists[i];
-      if (list.type === 'list') {
-        let listsContainer = document.getElementById('lists-container');
-        let listTemplate = document.createElement('div');
-        listTemplate.setAttribute('data-list-order', list.listnumber);
-        listTemplate.setAttribute('draggable', true);
-        listTemplate.setAttribute('class', 'dragList');
-        listTemplate.addEventListener('dragstart', dragStart);
-        listTemplate.addEventListener('drop', dragEnd);
-        // Template new list
-        listTemplate.innerHTML = `<div class="list" id="${list.listKey}" data-list-id="${list.listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${list.listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
-        listsContainer.append(listTemplate);
+  db.ref('/lists/')
+    .orderByChild('listnumber')
+    .once('value', function (snapshot) {
+      snapshot.forEach(function (childSnapshot) {
+        var childKey = childSnapshot.key;
+        var childData = childSnapshot.val();
+        console.log(childData);
+        lists.push(childData);
+      });
+      for (let i = 0; i < lists.length; i++) {
+        const list = lists[i];
+        if (list.type === 'list') {
+          let listsContainer = document.getElementById('lists-container');
+          let listTemplate = document.createElement('div');
+          listTemplate.setAttribute('data-list-order', list.listnumber);
+          listTemplate.setAttribute('draggable', true);
+          listTemplate.setAttribute('class', 'dragList');
+          listTemplate.addEventListener('dragstart', dragStart);
+          listTemplate.addEventListener('dragend', dragEnd);
+          // Template new list
+          listTemplate.innerHTML = `<div class="list" id="${list.listKey}" data-list-id="${list.listKey}"><form><input class="new-todo-content-input" type="text"></input><button onClick="return handleAddTodoClick(this)" data-list-id="${list.listKey}">Add New Todo</button></form><h3 class="title-edit" onclick="handleEditTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span><div class="todos-container"></div><small onclick="handleRemoveListClick(this)">X</small></div>`;
+          listsContainer.append(listTemplate);
 
-        items = [];
-        if (list.items) {
-          const items = Object.values(list.items);
-          items.forEach(function (item) {
-            listKey = item.todoList;
-            todoContent = item.title;
-            todoKey = item.todoKey;
-            state = item.done;
+          items = [];
+          if (list.items) {
+            const items = Object.values(list.items);
+            items.forEach(function (item) {
+              listKey = item.todoList;
+              todoContent = item.title;
+              todoKey = item.todoKey;
+              state = item.done;
 
-            let todoTemplate = document.createElement('div');
-            const getList = document.getElementById(listKey);
-            const targetTodosContainer = getList.querySelectorAll(
-              '.todos-container'
-            )[0];
+              let todoTemplate = document.createElement('div');
+              const getList = document.getElementById(listKey);
+              const targetTodosContainer = getList.querySelectorAll(
+                '.todos-container'
+              )[0];
 
-            if (state === true) {
-              todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox" checked><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
-            } else if (state === false) {
-              todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
-            }
-            targetTodosContainer.append(todoTemplate);
-            setTimeout(function afterTwoSeconds() {
-              moveDoneLast(todoTemplate);
-            }, 1000);
-          });
+              if (state === true) {
+                todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox" checked><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+              } else if (state === false) {
+                todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+              }
+              targetTodosContainer.append(todoTemplate);
+              setTimeout(function afterTwoSeconds() {
+                moveDoneLast(todoTemplate);
+              }, 1000);
+            });
+          }
+        } else if (list.type === 'kanban') {
+          // console.log('you have kanban');
         }
-      } else if (list.type === 'kanban') {
-        // console.log('you have kanban');
       }
-    }
-  });
+    });
 }
 
 /*===============================================================
@@ -442,9 +445,8 @@ let stateCheck = setInterval(() => {
 
 Next
 * Make Lists drag and droppable
-    * Update number based on location
-    * Save list order number to database
     * Populate lists in order from database
+        * Think through where in the code this should happen, ask Daniel if necessary.  
 
 * Make the kanban tasks have a data-order attribute so I can orderby number when pulling from the database
     * Add numbers to data attribute of the kanban tasks

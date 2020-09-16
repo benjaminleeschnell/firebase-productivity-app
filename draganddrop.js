@@ -12,9 +12,9 @@ listsContainer.addEventListener('dragover', dragOver);
 
 function dragOver(e) {
   e.preventDefault();
-  const afterElement = getDragAfterElement(this, e.clientY);
+  const afterElement = getDragAfterElement(this, e.clientX);
   const draglist = document.querySelector('.dragging');
-  //console.log(draglist);
+  // console.log(afterElement);
   if (afterElement == null) {
     this.appendChild(draglist);
   } else {
@@ -22,15 +22,14 @@ function dragOver(e) {
   }
 }
 
-function getDragAfterElement(listsContainer, y) {
+function getDragAfterElement(container, x) {
   const draglistElements = [
-    ...listsContainer.querySelectorAll('.draglist:not(.dragging)'),
+    ...container.querySelectorAll('.dragList:not(.dragging)'),
   ];
-
   return draglistElements.reduce(
     (closest, child) => {
       const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
+      const offset = x - box.left - box.width / 2;
       if (offset < 0 && offset > closest.offset) {
         return { offset: offset, element: child };
       } else {
@@ -45,7 +44,6 @@ function dragUpdateNr() {
   let drags = document.querySelectorAll('.dragList');
   for (let i = 0; i < drags.length; i++) {
     let drag = drags[i];
-    console.log(drag);
     drag.setAttribute('data-list-order', i);
   }
 }
