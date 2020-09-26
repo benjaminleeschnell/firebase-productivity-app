@@ -113,7 +113,7 @@ function addList(listOrderNumber) {
     </div>`;
 
   // Add new list to the DOM within lists container
-  listsContainer.append(listTemplate);
+  listsContainer.prepend(listTemplate);
 }
 
 function handleEditTitle(clickedElement) {
@@ -171,8 +171,8 @@ function addTodo(listKey, todoContent, todoOrderNumber) {
   todoTemplate.setAttribute('data-todo-order', todoOrderNumber);
   todoTemplate.setAttribute('draggable', 'true');
   todoTemplate.setAttribute('class', 'dragTodo');
-  todoTemplate.addEventListener('dragstart', dragStart);
-  todoTemplate.addEventListener('dragend', dragEnd);
+  todoTemplate.addEventListener('dragstart', todoDragStart);
+  todoTemplate.addEventListener('dragend', todoDragEnd);
 
   // Add todo in Firebase here
   const todoKey = db.ref('/lists/').child(listKey).child('items').push().key;
@@ -190,7 +190,7 @@ function addTodo(listKey, todoContent, todoOrderNumber) {
 
   // Template new todo
   todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}">
-      <input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i>
+      <span class="fa fa-circle"></span><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i>
     </div>`;
   // Add new todo to the DOM within target container
   targetTodosContainer.append(todoTemplate);
@@ -304,17 +304,24 @@ function loadFromDb() {
               todoContent = item.title;
               todoKey = item.todoKey;
               state = item.done;
+              todoOrderNumber = item.todoOrderNumber;
 
               let todoTemplate = document.createElement('div');
+              todoTemplate.setAttribute('data-todo-order', todoOrderNumber);
+              todoTemplate.setAttribute('draggable', 'true');
+              todoTemplate.setAttribute('class', 'dragTodo');
+              todoTemplate.addEventListener('dragstart', todoDragStart);
+              todoTemplate.addEventListener('dragend', todoDragEnd);
+
               const getList = document.getElementById(listKey);
               const targetTodosContainer = getList.querySelectorAll(
                 '.todos-container'
               )[0];
 
               if (state === true) {
-                todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox" checked><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+                todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><span class="fa fa-circle"></span><input class="completed" onclick="taskDone(this)" type="checkbox" checked><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
               } else if (state === false) {
-                todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
+                todoTemplate.innerHTML = `<div class="todo" data-todo-id="${todoKey}"><span class="fa fa-circle"></span><input class="completed" onclick="taskDone(this)" type="checkbox"><span class="todo-text ${state}" contenteditable="true" onclick="handleTodoEdit(this)">${todoContent}</span><span class="enterToSave">Type enter to save</span><i class='fa fa-trash' onClick="handleRemoveTodoClick(this)" data-todo-id="${todoKey}"></i></></div>`;
               }
               targetTodosContainer.append(todoTemplate);
               setTimeout(function afterTwoSeconds() {
@@ -353,7 +360,7 @@ function addKanban() {
   kanbanTemplate.setAttribute('class', 'kanban');
   kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbKey="${kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="removeKanban(this)" class="kanbanclose">X</div></div>`;
 
-  listsContainer.append(kanbanTemplate);
+  listsContainer.prepend(kanbanTemplate);
 }
 
 function addColumn(clickedElement) {
@@ -451,7 +458,9 @@ let stateCheck = setInterval(() => {
 /* 
 
 Next 
-* Make todo items drag and droppable 
+Make Lists drag and droppable
+* Make todo items drag and droppable
+    * Figure out FE solution for ordering by todoOrderNumber
 
 * Make the kanban tasks have a data-order attribute so I can orderby number when pulling from the database
     * Add numbers to data attribute of the kanban tasks
