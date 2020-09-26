@@ -48,13 +48,14 @@ function handleAddListClick() {
 
 function handleAddTodoClick(clickedElement) {
   // Set up variables
+  let todoOrderNumber = getNextTodoId();
   let listKey = clickedElement.getAttribute('data-list-id');
   let todoContent = document
     .querySelectorAll(`[data-list-id="${listKey}"]`)[0]
     .getElementsByClassName('new-todo-content-input')[0].value;
   //  let listTitle = clickedElement.parentElement.nextElementSibling.innerHTML;
   // Call function to add new todo
-  addTodo(listKey, todoContent);
+  addTodo(listKey, todoContent, todoOrderNumber);
   // return input to blank
   clickedElement.previousSibling.value = '';
   return false;
@@ -94,6 +95,7 @@ function addList(listOrderNumber) {
   // Set up variables
   let listsContainer = document.getElementById('lists-container');
   let listTemplate = document.createElement('div');
+  let parent = listTemplate.parentNode;
   listTemplate.setAttribute('data-list-order', listOrderNumber);
   listTemplate.setAttribute('draggable', true);
   listTemplate.setAttribute('class', 'dragList');
@@ -157,7 +159,7 @@ function handleTodoEdit(clickedElement) {
   });
 }
 
-function addTodo(listKey, todoContent) {
+function addTodo(listKey, todoContent, todoOrderNumber) {
   // Set up variables
   let targetList = document.querySelectorAll(
     `div.list[data-list-id="${listKey}"]`
@@ -166,6 +168,11 @@ function addTodo(listKey, todoContent) {
     'todos-container'
   )[0];
   let todoTemplate = document.createElement('div');
+  todoTemplate.setAttribute('data-todo-order', todoOrderNumber);
+  todoTemplate.setAttribute('draggable', 'true');
+  todoTemplate.setAttribute('class', 'dragTodo');
+  todoTemplate.addEventListener('dragstart', dragStart);
+  todoTemplate.addEventListener('dragend', dragEnd);
 
   // Add todo in Firebase here
   const todoKey = db.ref('/lists/').child(listKey).child('items').push().key;
@@ -174,6 +181,7 @@ function addTodo(listKey, todoContent) {
     todoList: listKey,
     todoKey: todoKey,
     done: false,
+    todoOrderNumber: todoOrderNumber,
   };
 
   var updates = {};
@@ -272,7 +280,6 @@ function loadFromDb() {
       snapshot.forEach(function (childSnapshot) {
         var childKey = childSnapshot.key;
         var childData = childSnapshot.val();
-        console.log(childData);
         lists.push(childData);
       });
       for (let i = 0; i < lists.length; i++) {
@@ -443,10 +450,8 @@ let stateCheck = setInterval(() => {
 
 /* 
 
-Next
-* Make Lists drag and droppable
-    * Populate lists in order from database
-        * Think through where in the code this should happen, ask Daniel if necessary.  
+Next 
+* Make todo items drag and droppable 
 
 * Make the kanban tasks have a data-order attribute so I can orderby number when pulling from the database
     * Add numbers to data attribute of the kanban tasks
