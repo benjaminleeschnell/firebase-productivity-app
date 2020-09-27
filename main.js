@@ -358,7 +358,7 @@ function addKanban() {
   let listsContainer = document.getElementById('lists-container');
   let kanbanTemplate = document.createElement('div');
   kanbanTemplate.setAttribute('class', 'kanban');
-  kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbKey="${kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="removeKanban(this)" class="kanbanclose">X</div></div>`;
+  kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbKey="${kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="handleRemoveKanbanClick(this)" class="kanbanclose">X</div></div>`;
 
   listsContainer.prepend(kanbanTemplate);
 }
@@ -432,7 +432,17 @@ function handleEditKColumnTitle(clickedElement) {
   console.log(clickedElement);
 }
 
-function removeKanban(clickedElement) {
+function handleRemoveKanbanClick(clickedElement) {
+  const kbkey = clickedElement.parentElement.parentElement.firstElementChild.getAttribute(
+    'data-kbkey'
+  );
+  removeKanban(clickedElement, kbkey);
+}
+
+function removeKanban(clickedElement, kbkey) {
+  // Remove from Firebase
+  task_to_remove = db.ref('/lists/').child(kbkey);
+  task_to_remove.remove();
   clickedElement.parentElement.parentElement.remove();
 }
 
@@ -460,7 +470,7 @@ let stateCheck = setInterval(() => {
 Next 
 Make Lists drag and droppable
 * Make todo items drag and droppable
-    * Figure out FE solution for ordering by todoOrderNumber
+    * Figure out FE solution for ordering by todoOrderNumber => ask daniel
 
 * Make the kanban tasks have a data-order attribute so I can orderby number when pulling from the database
     * Add numbers to data attribute of the kanban tasks
