@@ -284,8 +284,8 @@ function loadFromDb() {
       });
       for (let i = 0; i < lists.length; i++) {
         const list = lists[i];
+        let listsContainer = document.getElementById('lists-container');
         if (list.type === 'list') {
-          let listsContainer = document.getElementById('lists-container');
           let listTemplate = document.createElement('div');
           listTemplate.setAttribute('data-list-order', list.listnumber);
           listTemplate.setAttribute('draggable', true);
@@ -330,7 +330,42 @@ function loadFromDb() {
             });
           }
         } else if (list.type === 'kanban') {
-          // console.log('you have kanban');
+          let kanbanTemplate = document.createElement('div');
+          // kanbanTemplate.setAttribute('data-list-order', list.listnumber);
+          kanbanTemplate.setAttribute('draggable', true);
+          // kanbanTemplate.setAttribute('class', 'dragKanban');
+          // kanbanTemplate.addEventListener('dragstart', kanDragStart);
+          // kanbanTemplate.addEventListener('dragend', kanDragEnd);
+          // Template new kanban
+          kanbanTemplate.setAttribute('class', 'kanban');
+          kanbanTemplate.setAttribute('id', list.kbKey);
+          kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbKey="${list.kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="handleRemoveKanbanClick(this)" class="kanbanclose">X</div></div>`;
+          listsContainer.append(kanbanTemplate);
+
+          columns = [];
+          if (list.columns) {
+            // add columns here
+            const columns = Object.values(list.columns);
+            columns.forEach(function (column) {
+              colKey = column.colKey;
+              kbKey = column.kbKey;
+              console.leg;
+              // todoKey = column.kbKey;
+              //todoOrderNumber = column.todoOrderNumber;
+
+              const targetKanban = document.getElementById(kbKey);
+
+              const kcolumn = document.createElement('div');
+              kcolumn.setAttribute('class', 'kcolumn');
+              kcolumn.setAttribute('data-colKey', colKey);
+              kcolumn.innerHTML = `<div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">Column Title</div><div onclick="addKItem(this)" class="addkitem">+</div><div onclick="removeKColumn(this)" class="deleteColumn">X</div></div>`;
+              const addColumn = targetKanban.querySelectorAll('.addColumn')[0];
+              targetKanban.insertBefore(kcolumn, addColumn);
+            });
+          } else {
+            console.log('no columns');
+            //kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbKey="${list.kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="handleRemoveKanbanClick(this)" class="kanbanclose">X</div></div>`;
+          }
         }
       }
     });
