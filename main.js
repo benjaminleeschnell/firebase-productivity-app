@@ -361,10 +361,24 @@ function loadFromDb() {
               kcolumn.innerHTML = `<div onclick="handleEditKColumnTitle(this)" class="kcolumntitle">Column Title</div><div onclick="addKItem(this)" class="addkitem">+</div><div onclick="removeKColumn(this)" class="deleteColumn">X</div></div>`;
               const addColumn = targetKanban.querySelectorAll('.addColumn')[0];
               targetKanban.insertBefore(kcolumn, addColumn);
+
+              kitems = [];
+              if (column.items) {
+                const items = Object.values(column.items);
+                items.forEach(function (item) {
+                  itemKey = item.itemKey;
+                  const kitem = document.createElement('div');
+                  const addKitem = kcolumn.querySelectorAll('.addkitem')[0];
+                  kitem.setAttribute('class', 'kitem');
+                  kitem.setAttribute('data-itemKey', itemKey);
+                  kitem.innerHTML = `<span class="fa fa-circle"></span>
+                  <span onclick="handleEditKItem(this)" class="task">Task</span>
+                  <span onclick="removeKItem(this)" class="fa fa-trash"></span>`;
+
+                  kcolumn.insertBefore(kitem, addKitem);
+                });
+              }
             });
-          } else {
-            console.log('no columns');
-            //kanbanTemplate.innerHTML = `<div onclick="handleEditKanbanTitle(this)" data-kbKey="${list.kbKey}" class="kheader"><h3>Kanban Title</h3></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="handleRemoveKanbanClick(this)" class="kanbanclose">X</div></div>`;
           }
         }
       }
