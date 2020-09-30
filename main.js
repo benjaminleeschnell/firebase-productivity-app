@@ -339,7 +339,7 @@ function loadFromDb() {
           // Template new kanban
           kanbanTemplate.setAttribute('class', 'kanban');
           kanbanTemplate.setAttribute('id', list.kbKey);
-          kanbanTemplate.innerHTML = `<div data-kbKey="${list.kbKey}" class="kheader"><h3 onclick="handleEditKanbanTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="handleRemoveKanbanClick(this)" class="kanbanclose">X</div></div>`;
+          kanbanTemplate.innerHTML = `<div data-kbKey="${list.kbKey}" class="kheader"><h3 onclick="handleEditKanbanTitle(this)" contenteditable="true">${list.title}</h3><span class="enterToSave">Type enter to save</span></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="removeKanban(this)" class="kanbanclose">X</div></div>`;
           listsContainer.append(kanbanTemplate);
 
           columns = [];
@@ -349,8 +349,7 @@ function loadFromDb() {
             columns.forEach(function (column) {
               colKey = column.colKey;
               kbKey = column.kbKey;
-              console.leg;
-              // todoKey = column.kbKey;
+              colTitle = column.colTitle;
               //todoOrderNumber = column.todoOrderNumber;
 
               const targetKanban = document.getElementById(kbKey);
@@ -358,7 +357,7 @@ function loadFromDb() {
               const kcolumn = document.createElement('div');
               kcolumn.setAttribute('class', 'kcolumn');
               kcolumn.setAttribute('data-colKey', colKey);
-              kcolumn.innerHTML = `<div onclick="handleEditKColumnTitle(this)" contenteditable="true" class="kcolumntitle">Column Title</div><span class="enterToSave">Type enter to save</span><div onclick="addKItem(this)" class="addkitem">+</div><div onclick="removeKColumn(this)" class="deleteColumn">X</div></div>`;
+              kcolumn.innerHTML = `<div onclick="handleEditKColumnTitle(this)" contenteditable="true" class="kcolumntitle">${colTitle}</div><span class="enterToSave">Type enter to save</span><div onclick="addKItem(this)" class="addkitem">+</div><div onclick="removeKColumn(this)" class="deleteColumn">X</div></div>`;
               const addColumn = targetKanban.querySelectorAll('.addColumn')[0];
               targetKanban.insertBefore(kcolumn, addColumn);
 
@@ -367,12 +366,13 @@ function loadFromDb() {
                 const items = Object.values(column.items);
                 items.forEach(function (item) {
                   itemKey = item.itemKey;
+                  taskText = item.taskText;
                   const kitem = document.createElement('div');
                   const addKitem = kcolumn.querySelectorAll('.addkitem')[0];
                   kitem.setAttribute('class', 'kitem');
                   kitem.setAttribute('data-itemKey', itemKey);
                   kitem.innerHTML = `<span class="fa fa-circle"></span>
-                  <span onclick="handleEditKItem(this)" class="task">Task</span>
+                  <span onclick="handleEditKItem(this)" contenteditable="true" class="task">${taskText}</span><span class="enterToSave">Type enter to save</span>
                   <span onclick="removeKItem(this)" class="fa fa-trash"></span>`;
 
                   kcolumn.insertBefore(kitem, addKitem);
@@ -407,7 +407,7 @@ function addKanban() {
   let listsContainer = document.getElementById('lists-container');
   let kanbanTemplate = document.createElement('div');
   kanbanTemplate.setAttribute('class', 'kanban');
-  kanbanTemplate.innerHTML = `<div data-kbKey="${kbKey}" class="kheader"><h3 onclick="handleEditKanbanTitle(this)" contenteditable="true">Kanban Title</h3><span class="enterToSave">Type enter to save</span></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="handleRemoveKanbanClick(this)" class="kanbanclose">X</div></div>`;
+  kanbanTemplate.innerHTML = `<div data-kbKey="${kbKey}" class="kheader"><h3 onclick="handleEditKanbanTitle(this)" contenteditable="true">Kanban Title</h3><span class="enterToSave">Type enter to save</span></div><div onclick="addColumn(this)" class="addColumn">+</div><div class="kfooter"><div onclick="removeKanban(this)" class="kanbanclose">X</div></div>`;
 
   listsContainer.prepend(kanbanTemplate);
 }
@@ -468,7 +468,7 @@ function addKItem(clickedElement) {
   kitem.setAttribute('class', 'kitem');
   kitem.setAttribute('data-itemKey', itemKey);
   kitem.innerHTML = `<span class="fa fa-circle"></span>
-  <span onclick="handleEditKItem(this)" class="task">Task</span>
+  <span onclick="handleEditKItem(this)" contenteditable="true" class="task">Task</span><span class="enterToSave">Type enter to save</span>
   <span onclick="removeKItem(this)" class="fa fa-trash"></span>`;
 
   kcolumn.insertBefore(kitem, clickedElement);
@@ -514,14 +514,10 @@ function handleEditKColumnTitle(clickedElement) {
   });
 }
 
-function handleRemoveKanbanClick(clickedElement) {
+function removeKanban(clickedElement) {
   const kbkey = clickedElement.parentElement.parentElement.firstElementChild.getAttribute(
     'data-kbkey'
   );
-  removeKanban(clickedElement, kbkey);
-}
-
-function removeKanban(clickedElement, kbkey) {
   // Remove from Firebase
   task_to_remove = db.ref('/lists/').child(kbkey);
   task_to_remove.remove();
@@ -529,15 +525,68 @@ function removeKanban(clickedElement, kbkey) {
 }
 
 function handleEditKItem(clickedElement) {
-  console.log(clickedElement);
+  const alert = clickedElement.nextElementSibling;
+  alert.className = 'enterToSave show';
+  clickedElement.addEventListener('keydown', function (e) {
+    if (e.keyCode == 13) {
+      e.preventDefault();
+      // Add new list title to Firebase
+      const taskText = clickedElement.innerHTML;
+      const kanban =
+        clickedElement.parentElement.parentElement.previousElementSibling;
+      const kbKey = kanban.getAttribute('data-kbkey');
+      const colKey = clickedElement.parentElement.parentElement.getAttribute(
+        'data-colkey'
+      );
+      const itemkey = clickedElement.parentElement.getAttribute('data-itemkey');
+      db.ref('lists/')
+        .child(kbKey)
+        .child('columns')
+        .child(colKey)
+        .child('items')
+        .child('itemkey')
+        .child('taskText')
+        .set(taskText);
+      clickedElement.blur();
+      alert.className = 'enterToSave hide';
+    }
+  });
 }
 
 function removeKItem(clickedElement) {
-  console.log(clickedElement);
+  const kbkey = clickedElement.parentElement.parentElement.previousElementSibling.getAttribute(
+    'data-kbkey'
+  );
+  const colkey = clickedElement.parentElement.parentElement.getAttribute(
+    'data-colkey'
+  );
+  const itemkey = clickedElement.parentElement.getAttribute('data-itemkey');
+  // Remove from Firebase
+  task_to_remove = db
+    .ref('/lists/')
+    .child(kbkey)
+    .child('columns')
+    .child(colkey)
+    .child('items')
+    .child(itemkey);
+  task_to_remove.remove();
+  clickedElement.parentElement.remove();
 }
 
 function removeKColumn(clickedElement) {
-  console.log(clickedElement);
+  const kbkey = clickedElement.parentElement.parentElement.firstElementChild.getAttribute(
+    'data-kbkey'
+  );
+  console.log(kbkey);
+  const colkey = clickedElement.parentElement.getAttribute('data-colkey');
+  // Remove from Firebase
+  task_to_remove = db
+    .ref('/lists/')
+    .child(kbkey)
+    .child('columns')
+    .child(colkey);
+  task_to_remove.remove();
+  clickedElement.parentElement.remove();
 }
 
 let stateCheck = setInterval(() => {
